@@ -3,9 +3,11 @@ package com.example;
 import static org.assertj.core.api.Assertions.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.junit.Test;
@@ -61,6 +63,27 @@ public class JavaTest {
     assertThat(dictionary.containsKey("key3")).isFalse();
 
     assertThat(dictionary.get("key1").getValue()).isEqualTo("value1");
+
+  }
+
+  /**
+   * 重複を除外したリストの作り方.
+   * distinct の場合、equalsが適用されてしまうので、自前の除外条件を使用したい場合用.
+   */
+  @Test
+  public void howto_no_duplicate_list() {
+    List<Hoge> hoges = new ArrayList<>();
+    hoges.add(new Hoge("key1", "value1"));
+    hoges.add(new Hoge("key2", "value2"));
+    hoges.add(new Hoge("key3", "value3"));
+    hoges.add(new Hoge("key1", "valueX"));
+    
+    Set<String> set = new HashSet<>();
+    List<Hoge> noDuplicateList = hoges.stream()
+        .filter(v -> set.add(v.getKey()))
+        .collect(Collectors.toList());
+
+    assertThat(noDuplicateList.size()).isEqualTo(3);
 
   }
 
