@@ -13,17 +13,133 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Value;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class StreamAPITest {
+
+  @Data
+  @AllArgsConstructor
+  private static class Moge {
+    private String key;
+    private String val1;
+    private String val2;
+  }
+
+  @Test
+  public void stream_parallel() {
+    List<String> alphabet = Arrays.asList("a", "b", "c", "d", "e", "f");
+
+    List<String> serial = new ArrayList<>();
+    alphabet.stream().forEach(v -> serial.add(v)); // side-effects
+    serial.forEach(System.out::println);
+    assertThat(serial).containsExactly("a", "b", "c", "d", "e", "f");
+
+    System.out.println("----------------------");
+
+    List<String> parallel = new ArrayList<>();
+    alphabet.stream().parallel().forEach(v -> parallel.add(v)); // side-effects
+    parallel.forEach(System.out::println);
+    assertThat(parallel).containsExactly("a", "b", "c", "d", "e", "f"); // Assertion ERROR!!
+
+  }
+
+  @Test
+  public void stream_concatenate() {
+    List<Moge> listA = Arrays.asList(
+        new Moge("key1", "val1", null),
+        new Moge("key2", "val2", null),
+        new Moge("key3", "val3", null),
+        new Moge("key4", "val4", null),
+        new Moge("key5", "val5", null));
+
+    List<Moge> listB = Arrays.asList(
+        new Moge("key5", null, "VAL5"),
+        new Moge("key7", null, "VAL7"),
+        new Moge("key8", null, "VAL8"),
+        new Moge("key1", null, "VAL1"),
+        new Moge("key5", null, "VAL5"));
+
+    List<Moge> listAB = listA.stream()
+        .map(a -> {
+          Moge findMoge = listB.stream().filter(b -> a.getKey().equals(b.getKey())).findFirst().orElse(a);
+          return new Moge(a.getKey(), a.getVal1(), findMoge.getVal2());
+        })
+        .collect(Collectors.toList());
+
+    listAB.forEach(System.out::println);
+  }
+
+  @Test
+  public void stream_side_effects() {
+    List<String> alphabet = Arrays.asList("a", "b", "c", "d", "e", "f");
+    List<String> actual = new ArrayList<>();
+
+    alphabet.stream()
+        .filter(v -> v.compareTo("c") <= 0)
+        .forEach(v -> actual.add(v)); // No side-effects!
+
+    assertThat(actual).containsAll(Arrays.asList("a", "b", "c"));
+  }
+
+  @Test
+  public void stream_generate() {
+    Stream<Double> stream = Stream.generate(Math::random);
+    stream.limit(10).forEach(System.out::println);
+  }
+
+  @Test
+  public void stream_predicate() {
+    List<String> alphabet = Arrays.asList("a", "b", "c", "d", "e", "f");
+    List<String> actual = alphabet.stream()
+        .filter(v -> v.compareTo("c") <= 0) // v を受取り、真偽値を返却する
+        .collect(Collectors.toList());
+
+    assertThat(actual).containsAll(Arrays.asList("a", "b", "c"));
+  }
+
+  @Test
+  public void stream_function() {
+    List<String> alphabet = Arrays.asList("a", "b", "c", "d", "e", "f");
+    List<String> upperCase = alphabet.stream()
+        .map(v -> v.toUpperCase()) // function. v を受取り、大文字にして返す
+        .collect(Collectors.toList());
+
+    assertThat(upperCase.get(0)).isEqualTo("A");
+    assertThat(upperCase.get(1)).isEqualTo("B");
+    assertThat(upperCase.get(2)).isEqualTo("C");
+    assertThat(upperCase.get(3)).isEqualTo("D");
+    assertThat(upperCase.get(4)).isEqualTo("E");
+    assertThat(upperCase.get(5)).isEqualTo("F");
+  }
+
+  @Test
+  public void stream_consumer() {
+    List<String> alphabet = Arrays.asList("a", "b", "c", "d", "e", "f");
+    alphabet.stream().forEach(System.out::println); // 外部出力に対して影響を及ぼしている→副作用を与えている
+  }
+
+  @Test
+  public void stream_forEach() {
+    List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5);
+    numbers.stream().forEach(System.out::println);
+
+    for (int i = 0; i < numbers.size(); i++) {
+      System.out.println(numbers.get(i));
+      // System.out::println // NG
+    }
+
+  }
 
   @Value
   private static class Hoge {
