@@ -1,6 +1,7 @@
 package com.example;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,11 +13,38 @@ import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import lombok.experimental.Value;
+import lombok.Value;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class JavaTest {
+
+  @Test
+  public void bigdecimal_test() {
+    BigDecimal aa = BigDecimal.valueOf(1.0101);
+    aa = aa.setScale(2, RoundingMode.UP);
+    System.out.println(aa);
+  }
+
+  @Test
+  public void generics_invariant() {
+    List<String> strList = new ArrayList<String>();
+    strList.add("test1");
+    strList.add("test2");
+    List<Object> objList = new ArrayList<Object>();
+    // objList = strList; // コンパイルエラー
+  }
+
+  @Test
+  public void generics_covariant() {
+    String[] strArray = { "test1", "test2" };
+    Object[] objArray = strArray; // 配列は共変なので代入可能
+    objArray[0] = new Integer(3); // java.lang.ArrayStoreException
+
+    for (Object obj : objArray) {
+      System.out.println(obj.toString());
+    }
+  }
 
   @Test
   public void string_test() {

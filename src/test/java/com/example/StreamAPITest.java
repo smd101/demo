@@ -2,6 +2,7 @@ package com.example;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Formatter;
@@ -27,6 +28,35 @@ import lombok.Value;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class StreamAPITest {
+
+  @Data
+  @AllArgsConstructor
+  private static class Fuga {
+    private String key1;
+    private String key2;
+    private BigDecimal val1;
+  }
+
+  private String getSummaryKey(final Fuga fuga) {
+    return fuga.getKey1() + ":" + fuga.getKey2();
+  }
+
+  @Test
+  public void stream_summary() {
+    List<Fuga> fugas = Arrays.asList(
+        new Fuga("A", "a", BigDecimal.valueOf(1)),
+        new Fuga("B", "a", BigDecimal.valueOf(3)),
+        new Fuga("B", "b", BigDecimal.valueOf(5)),
+        new Fuga("B", "a", BigDecimal.valueOf(7)),
+        new Fuga("A", "a", BigDecimal.valueOf(11)));
+
+    Map<String, BigDecimal> summary = fugas.stream()
+        .collect(Collectors.groupingBy(
+            this::getSummaryKey,
+            Collectors.mapping(Fuga::getVal1, Collectors.reducing(BigDecimal.ZERO, BigDecimal::add))));
+
+    System.out.println(summary);
+  }
 
   @Data
   @AllArgsConstructor
