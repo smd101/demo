@@ -3,14 +3,23 @@ package com.example;
 import static org.assertj.core.api.Assertions.*;
 
 import java.math.BigDecimal;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Formatter;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
@@ -30,6 +39,61 @@ import lombok.Value;
 public class StreamAPITest {
 
   @Data
+  public class Hoge2 {
+    private String name;
+
+    public Hoge2() {
+      this.name = "hoge";
+      System.out.println(this.name);
+    }
+
+    public Hoge2(String s) {
+      this.name = s;
+      System.out.println(this.name);
+    }
+  }
+
+  @Test
+  public void defaultValue() {
+    String value = "hoge";
+    String actual = Optional.ofNullable(value).orElse("");
+    assertThat(actual).isEqualTo("hoge");
+  }
+
+  @Test
+  public void orElseTest() {
+    Hoge2 actual = Optional.ofNullable(new Hoge2()).orElse(new Hoge2("moge"));
+    assertThat(actual.getName()).isEqualTo("hoge");
+  }
+
+  private String getDefault() {
+    System.out.println("getDefault");
+    return "DEFAULT";
+  }
+
+  private List<Integer> getEmptyList() {
+    return new ArrayList<>();
+  }
+
+  private List<Integer> getNotEmptyList() {
+    return Arrays.asList(1, 2, 3);
+  }
+
+  private List<String> getList() {
+    return getEmptyList().stream()
+        .map(e -> e.toString())
+        .collect(Collectors.toList());
+  }
+
+  @Test
+  public void empty_map_test() {
+    List<String> actual = getList();
+    for (String s : actual)
+      System.out.println(s);
+
+  }
+
+  @Data
   @AllArgsConstructor
   private static class Fuga {
     private String key1;
@@ -39,6 +103,30 @@ public class StreamAPITest {
 
   private String getSummaryKey(final Fuga fuga) {
     return fuga.getKey1() + ":" + fuga.getKey2();
+  }
+
+  @Test
+  public void Test() {
+    System.out.println("#####" + new Date());
+    Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+    DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+    df.setTimeZone(cal.getTimeZone());
+    String timestamp = df.format(cal.getTime());
+
+    System.out.println("#####" + timestamp);
+
+    LocalDateTime localDateTime = LocalDateTime.now();
+    System.out.println("#####" + localDateTime);
+
+    ZonedDateTime jst = ZonedDateTime.now(ZoneId.of("Asia/Tokyo"));
+    ZonedDateTime utc = ZonedDateTime.ofInstant(jst.toInstant(), ZoneId.of("UTC"));
+    System.out.println("#####" + jst);
+    System.out.println("#####" + utc);
+
+    ZonedDateTime zonedDateTime = new Date().toInstant().atZone(ZoneId.systemDefault());
+    System.out.println("#####" + zonedDateTime);
+    System.out.println("#####" + ZonedDateTime.ofInstant(zonedDateTime.toInstant(), ZoneId.of("UTC")));
+    System.out.println("#####" + Date.from(zonedDateTime.toInstant()));
   }
 
   @Test

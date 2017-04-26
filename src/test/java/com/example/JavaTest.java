@@ -1,5 +1,7 @@
 package com.example;
 
+import static org.assertj.core.api.Assertions.*;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -24,6 +26,13 @@ public class JavaTest {
     BigDecimal aa = BigDecimal.valueOf(1.0101);
     aa = aa.setScale(2, RoundingMode.UP);
     System.out.println(aa);
+  }
+
+  @Test
+  public void equalsIgnoreCase_test() {
+    assertThat("ｓ".equalsIgnoreCase("Ｓ")).isTrue();
+    assertThat("s".equalsIgnoreCase("Ｓ")).isFalse();
+    assertThat("S".equalsIgnoreCase("s")).isTrue();
   }
 
   @Test
@@ -89,6 +98,18 @@ public class JavaTest {
     mm.forEach((k, v) -> {
       System.out.println(String.format("%s -> %f", k, v.stream().map(Row::getValue).reduce(BigDecimal.ZERO, BigDecimal::add)));
     });
+  }
+
+  @Test
+  public void bigdecimal_multiple_test() {
+    BigDecimal one = BigDecimal.valueOf(1);
+    BigDecimal three = BigDecimal.valueOf(3);
+    BigDecimal ans = one.multiply(three);
+    ans = ans.divide(three);
+    ans = one.subtract(ans);
+    System.out.println(ans);
+    System.out.println(one.subtract(one.multiply(three).divide(three)));
+
   }
 
 }
